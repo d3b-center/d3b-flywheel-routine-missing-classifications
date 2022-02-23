@@ -55,18 +55,19 @@ for project in fw.projects.iter():
         acq_rows = df[df['acquisition.id']==acq_id]
         acq_rows = acq_rows[acq_rows['file.id']!=file_id]
         ## look for any existing classifications, if exist then use to update the missing file classification
-        if (not acq_rows[~acq_rows['file.classification.Intent'].isnull()].empty) & \
-            (not acq_rows[~acq_rows['file.classification.Features'].isnull()].empty) & \
+        if (not acq_rows[~acq_rows['file.classification.Intent'].isnull()].empty) | \
+            (not acq_rows[~acq_rows['file.classification.Features'].isnull()].empty) | \
             (not acq_rows[~acq_rows['file.classification.Measurement'].isnull()].empty): # if it's not empty
             first_row = acq_rows.iloc[0] # grab the first file in the acqusition
-            class_intent = first_row['file.classification.Intent']
-            class_features = first_row['file.classification.Features']
-            class_measurement = first_row['file.classification.Measurement']
+            classification_in = {}
+            if first_row['file.classification.Intent']:
+                classification_in['Intent'] = first_row['file.classification.Intent']
+            if first_row['file.classification.Features']:
+                classification_in['Features'] = first_row['file.classification.Features']
+            if first_row['file.classification.Measurement']:
+                classification_in['Measurement'] = first_row['file.classification.Measurement']
             acq = fw.get_acquisition(acq_id)
             acq.replace_file_classification(file_name, \
-                                            classification={
-                                                'Intent': class_intent,
-                                                'Features': class_features,
-                                                'Measurement': class_measurement } )
-            print('UPDATED: '+('/'.join([row['subject.label'],row['session.label'],row['acquisition.label'],row['file.name']]))+' to ['+(' '.join(class_intent))+']['+(' '.join(class_features))+']['+(' '.join(class_measurement))+']')
+                                            classification=classification_in )
+            print('UPDATED: '+('/'.join([row['subject.label'],row['session.label'],row['acquisition.label'],row['file.name']])))
 

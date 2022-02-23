@@ -9,7 +9,7 @@ pip3 install -r requirements.txt
 python3 fw_add_missing_file_classifications_dataView.py
 ```
 
-Operation depends on one environment variables:
+Operation depends on one environment variable:
 
 | Environment Key | Description |
 |-----------------|-------------|

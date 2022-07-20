@@ -43,31 +43,32 @@ for project in fw.projects.iter():
     project = fw.projects.find_first('label='+proj_label);
     print('PROCESSING: '+proj_label)
     df = fw.read_view_dataframe(view, project.id) # dataframe with all files in this proj
-    df = df[df['file.modality']=='MR'] # filter to nifti's with no metadata
-    df_sub = df[(df['file.classification.Intent'].isnull()) & \
-                (df['file.classification.Features'].isnull()) & \
-                (df['file.classification.Measurement'].isnull())]
-    df_sub = df_sub[df_sub['file.type']=='nifti']
-    for index, row in df_sub.iterrows(): # loop through the nifti files
-        file_id = row['file.id']
-        file_name = row['file.name']
-        acq_id = row['acquisition.id']
-        acq_rows = df[df['acquisition.id']==acq_id]
-        acq_rows = acq_rows[acq_rows['file.id']!=file_id]
-        ## look for any existing classifications, if exist then use to update the missing file classification
-        if (not acq_rows[~acq_rows['file.classification.Intent'].isnull()].empty) | \
-            (not acq_rows[~acq_rows['file.classification.Features'].isnull()].empty) | \
-            (not acq_rows[~acq_rows['file.classification.Measurement'].isnull()].empty): # if it's not empty
-            first_row = acq_rows.iloc[0] # grab the first file in the acqusition
-            classification_in = {}
-            if first_row['file.classification.Intent']:
-                classification_in['Intent'] = first_row['file.classification.Intent']
-            if first_row['file.classification.Features']:
-                classification_in['Features'] = first_row['file.classification.Features']
-            if first_row['file.classification.Measurement']:
-                classification_in['Measurement'] = first_row['file.classification.Measurement']
-            acq = fw.get_acquisition(acq_id)
-            acq.replace_file_classification(file_name, \
-                                            classification=classification_in )
-            print('UPDATED: '+('/'.join([row['subject.label'],row['session.label'],row['acquisition.label'],row['file.name']])))
+    if not df.empty:
+        df = df[df['file.modality']=='MR'] # filter to nifti's with no metadata
+        df_sub = df[(df['file.classification.Intent'].isnull()) & \
+                    (df['file.classification.Features'].isnull()) & \
+                    (df['file.classification.Measurement'].isnull())]
+        df_sub = df_sub[df_sub['file.type']=='nifti']
+        for index, row in df_sub.iterrows(): # loop through the nifti files
+            file_id = row['file.id']
+            file_name = row['file.name']
+            acq_id = row['acquisition.id']
+            acq_rows = df[df['acquisition.id']==acq_id]
+            acq_rows = acq_rows[acq_rows['file.id']!=file_id]
+            ## look for any existing classifications, if exist then use to update the missing file classification
+            if (not acq_rows[~acq_rows['file.classification.Intent'].isnull()].empty) | \
+                (not acq_rows[~acq_rows['file.classification.Features'].isnull()].empty) | \
+                (not acq_rows[~acq_rows['file.classification.Measurement'].isnull()].empty): # if it's not empty
+                first_row = acq_rows.iloc[0] # grab the first file in the acqusition
+                classification_in = {}
+                if first_row['file.classification.Intent']:
+                    classification_in['Intent'] = first_row['file.classification.Intent']
+                if first_row['file.classification.Features']:
+                    classification_in['Features'] = first_row['file.classification.Features']
+                if first_row['file.classification.Measurement']:
+                    classification_in['Measurement'] = first_row['file.classification.Measurement']
+                acq = fw.get_acquisition(acq_id)
+                acq.replace_file_classification(file_name, \
+                                                classification=classification_in )
+                print('UPDATED: '+('/'.join([row['subject.label'],row['session.label'],row['acquisition.label'],row['file.name']])))
 
